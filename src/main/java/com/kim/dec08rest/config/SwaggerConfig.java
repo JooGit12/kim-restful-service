@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
     @Bean
     public GroupedOpenApi customTestOpenAPI(){
-        String[] paths = {"/user/**", "/admin/**"};
+        String[] paths = {"/users/**", "/admin/**"};
 
         return GroupedOpenApi.builder()
                 .group("일반 사용자와 관리자를 위한 User 도메인에 대한 API")

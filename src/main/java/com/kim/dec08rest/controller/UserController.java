@@ -3,6 +3,11 @@ package com.kim.dec08rest.controller;
 import com.kim.dec08rest.bean.User;
 import com.kim.dec08rest.dao.UserDaoService;
 import com.kim.dec08rest.exception.UserNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -17,6 +22,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
+@Tag(name = "user-controller", description = "일반 사용자 서비스를 위한 컨트롤러입니다.")
 public class UserController {
     private UserDaoService service;
 
@@ -30,7 +36,15 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public EntityModel<User> retrieveUser(@PathVariable int id){
+    @Operation(summary = "사용자 정보 조회 API입니다.", description = "사용자 ID를 이용해서 상세정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "정상작동되었습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+            @ApiResponse(responseCode = "404", description = "유저 정보를 찾을 수 없습니다."),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류"),
+    })
+    public EntityModel<User> retrieveUser(
+            @Parameter(description = "사용자ID", required = true, example = "1") @PathVariable int id){
         User user = service.findOne(id);
 
         if (user == null) {
