@@ -3,6 +3,7 @@ package com.kim.dec08rest.controller;
 import com.kim.dec08rest.bean.Post;
 import com.kim.dec08rest.bean.User;
 import com.kim.dec08rest.exception.UserNotFoundException;
+import com.kim.dec08rest.repository.PostRepository;
 import com.kim.dec08rest.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
@@ -23,9 +24,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class UserJpaController {
 
     private UserRepository userRepository;
+    private PostRepository postRepository;
 
-    public UserJpaController(UserRepository userRepository) {
+    public UserJpaController(UserRepository userRepository, PostRepository postRepository) {
         this.userRepository = userRepository;
+        this.postRepository = postRepository;
     }
 
     // /jpa/users
@@ -39,7 +42,7 @@ public class UserJpaController {
         Optional<User> user = userRepository.findById(id);
 
         if (!user.isPresent()) {
-            throw new UserNotFoundException("id" + id);
+            throw new UserNotFoundException("id - " + id);
         }
 
         EntityModel entityModel = EntityModel.of(user.get());
@@ -74,5 +77,26 @@ public class UserJpaController {
             throw new UserNotFoundException("id-" + id);
         }
         return  user.get().getPost();
+    }
+
+    @PostMapping("/users/{id}/posts")
+    public ResponseEntity createPost(@PathVariable int id, @RequestBody Post post) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (!userOptional.isPresent()) {
+            throw new UserNotFoundException("id=" + id);
+        }
+
+        User user = userOptional.get();
+
+        post.setUser(user);
+
+        postRepository.save(post);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(post.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).build();
     }
 }
